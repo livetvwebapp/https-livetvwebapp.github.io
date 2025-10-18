@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>My Premium IPTV</title>
+    <title>My Live TV</title>
     <script src="https://cdn.jsdelivr.net/npm/hls.js@latest"></script>
     <style>
         :root {
@@ -35,16 +35,12 @@
         .sidebar { position: fixed; top: 0; left: 0; width: 240px; height: 100vh; background-color: var(--sidebar-bg); color: var(--text-sidebar); padding-top: 20px; z-index: 1002; transition: transform 0.3s ease; display: flex; flex-direction: column; }
         .sidebar-header { padding: 0 20px 20px 20px; font-size: 1.5rem; font-weight: bold; }
         .sidebar-nav { list-style: none; flex-grow: 1; overflow-y: auto; }
-        .sidebar-nav li a { display: flex; align-items: center; padding: 15px 20px; color: var(--text-sidebar); text-decoration: none; font-weight: 500; border-left: 3px solid transparent; transition: background-color 0.2s; }
+        .sidebar-nav li a { display: flex; align-items: center; padding: 12px 20px; font-size: 0.95rem; color: var(--text-sidebar); text-decoration: none; font-weight: 500; border-left: 3px solid transparent; transition: background-color 0.2s; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
         .sidebar-nav li a:hover { background-color: rgba(255, 255, 255, 0.1); }
         .sidebar-nav li a.active { background-color: rgba(0, 0, 0, 0.2); border-left-color: var(--accent-color); }
-        .sidebar-nav .icon { width: 20px; height: 20px; margin-right: 15px; stroke-width: 2; }
         .main-content { padding: 20px; }
         .video-container { position: sticky; top: 60px; z-index: 1000; margin-bottom: 20px; background-color: #000; box-shadow: 0 4px 10px var(--shadow-color); transition: all 0.3s ease; }
         #video-player { width: 100%; height: auto; max-height: calc(100vh - 80px); display: block; }
-        .player-controls { position: absolute; top: 10px; right: 10px; }
-        .player-controls button { background: rgba(0,0,0,0.5); border: none; color: white; padding: 5px; cursor: pointer; border-radius: 50%; }
-        .player-controls .icon { width: 20px; height: 20px; stroke: #fff; }
         .video-container.minimized { position: fixed; bottom: 20px; right: 20px; width: 320px; height: 180px; top: auto; }
         .channel-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(180px, 1fr)); gap: 20px; }
         .channel-card { background-color: var(--secondary-bg); border-radius: 8px; box-shadow: 0 2px 4px var(--shadow-color); overflow: hidden; cursor: pointer; transition: transform 0.2s, box-shadow 0.2s; position: relative; }
@@ -64,23 +60,21 @@
 <body>
     <header class="header"><button class="menu-btn" id="menu-btn"><svg class="menu-icon" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"/></svg></button><h1 class="header-title" id="header-title">All Channels</h1><div class="search-bar"><input type="text" id="search-input" placeholder="Search for channels..."/></div><div class="header-actions"><button id="theme-toggle-btn" title="Toggle Theme"><svg class="icon" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z"/></svg></button></div></header>
     <nav class="sidebar" id="sidebar"><div class="sidebar-header">My IPTV</div><ul class="sidebar-nav" id="category-list"></ul></nav>
-    <main class="main-content" id="main-content"><div class="video-container" id="video-container" style="display: none;"><video id="video-player" controls="controls" autoplay="autoplay" playsinline="playsinline"></video><div class="player-controls"><button id="minimize-player-btn" title="Minimize Player"><svg class="icon" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M3.75 3.75v4.5m0-4.5h4.5m-4.5 0L9 9M3.75 20.25v-4.5m0 4.5h4.5m-4.5 0L9 15M20.25 3.75h-4.5m4.5 0v4.5m0-4.5L15 9m5.25 11.25h-4.5m4.5 0v-4.5m0 4.5L15 15"></path></svg></button><button id="expand-player-btn" title="Expand Player" style="display:none;"><svg class="icon" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M3.75 3.75v4.5m0-4.5h4.5m-4.5 0L9 9M3.75 20.25v-4.5m0 4.5h4.5m-4.5 0L9 15M20.25 3.75h-4.5m4.5 0v4.5m0-4.5L15 9m5.25 11.25h-4.5m4.5 0v-4.5m0 4.5L15 15"></path></svg></button></div></div><div class="channel-grid" id="channel-grid"><div class="loader">Loading channels...</div></div></main>
+    <main class="main-content" id="main-content"><div class="video-container" id="video-container" style="display: none;"><video id="video-player" controls="controls" autoplay="autoplay" playsinline="playsinline"></video></div><div class="channel-grid" id="channel-grid"><div class="loader">Loading your channels... Please wait.</div></div></main>
 
     <script>
     //<![CDATA[
     document.addEventListener('DOMContentLoaded', function() {
         // =================================================================================
-        // ## ধাপ ১: এখানে আপনার কেনা IPTV M3U লিংকটি বসান ##
+        // ## শুধুমাত্র এইখানে আপনার কেনা IPTV M3U লিংকটি বসান ##
         // নিচের "" এর ভেতরে আপনার সম্পূর্ণ M3U লিংকটি পেস্ট করুন।
         // =================================================================================
-        var M3U_URL = "https://iptv-org.github.io/iptv/index.m3u"; 
+        var YOUR_M3U_LINK = "https://iptv-org.github.io/iptv/index.m3u"; // <<< এই "" এর ভেতরে আপনার লিংকটি পেস্ট করুন
 
         var body = document.body, videoContainer = document.getElementById('video-container'), video = document.getElementById('video-player'),
             channelGrid = document.getElementById('channel-grid'), headerTitle = document.getElementById('header-title'),
             searchInput = document.getElementById('search-input'), themeToggleBtn = document.getElementById('theme-toggle-btn'),
-            menuBtn = document.getElementById('menu-btn'), sidebar = document.getElementById('sidebar'),
-            mainContent = document.getElementById('main-content'), categoryList = document.getElementById('category-list'),
-            minimizePlayerBtn = document.getElementById('minimize-player-btn'), expandPlayerBtn = document.getElementById('expand-player-btn');
+            menuBtn = document.getElementById('menu-btn'), categoryList = document.getElementById('category-list');
 
         var hls = new Hls(), allChannels = [], favorites = JSON.parse(localStorage.getItem('favorites')) || [],
             recentlyWatched = JSON.parse(localStorage.getItem('recentlyWatched')) || [], currentCategory = 'All';
@@ -89,17 +83,17 @@
             var lines = data.split('\n');
             var channels = [];
             for (var i = 0; i < lines.length; i++) {
-                if (lines[i].startsWith('#EXTINF:')) {
+                if (lines[i].indexOf('#EXTINF:') === 0) {
                     var info = lines[i];
                     var url = lines[++i];
-                    if (url && url.trim().startsWith('http')) {
+                    if (url && url.trim().indexOf('http') === 0) {
                         var logoMatch = info.match(/tvg-logo="([^"]*)"/);
                         var groupMatch = info.match(/group-title="([^"]*)"/);
                         var nameMatch = info.match(/,(.*)$/);
                         channels.push({
-                            name: nameMatch ? nameMatch[1].trim() : 'Unknown Channel',
+                            name: nameMatch ? nameMatch[1].trim() : 'Unknown',
                             logo: logoMatch ? logoMatch[1] : 'https://via.placeholder.com/150x100.png?text=No+Logo',
-                            group: groupMatch ? groupMatch[1] : 'General',
+                            group: groupMatch ? groupMatch[1].replace(/\|.*?\|/g, '').trim() : 'General', // Removes quality tags like |HD|
                             url: url.trim()
                         });
                     }
@@ -111,24 +105,25 @@
         function updateCategories(channels) {
             var groups = ['All', 'Favorites', 'Recently Watched'];
             channels.forEach(function(c) { if (c.group && groups.indexOf(c.group) === -1) groups.push(c.group); });
+            groups.sort();
             categoryList.innerHTML = '';
             groups.forEach(function(group) {
                 var li = document.createElement('li');
                 var a = document.createElement('a');
                 a.href = '#'; a.setAttribute('data-category', group);
                 a.textContent = group;
-                if (group === currentCategory) a.className = 'active';
+                if (group === 'All') a.className = 'active';
                 li.appendChild(a); categoryList.appendChild(li);
             });
         }
         
         function renderChannels(channels) {
             channelGrid.innerHTML = '';
-            if (channels.length === 0) { channelGrid.innerHTML = '<p class="loader">No channels found.</p>'; return; }
+            if (channels.length === 0) { channelGrid.innerHTML = '<p class="loader">No channels found for this category.</p>'; return; }
             channels.forEach(function(c) {
                 var isFav = favorites.indexOf(c.url) > -1, card = document.createElement('div');
                 card.className = 'channel-card'; card.setAttribute('data-url', c.url);
-                card.innerHTML = '<div class="channel-logo-container"><img src="'+c.logo+'" alt="'+c.name+'" class="channel-logo" loading="lazy" onerror="this.src=\'https://via.placeholder.com/150x100.png?text=No+Logo\'"/></div><div class="channel-info"><span class="channel-name">'+c.name+'</span></div><button class="favorite-btn '+(isFav?'is-favorite':'')+'" data-url="'+c.url+'"><svg class="icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 17.27L18.18 21l-1.64-7.03L22 9.24l-7.19-.61L12 2 9.19 8.63 2 9.24l5.46 4.73L5.82 21z"/></svg></button>';
+                card.innerHTML = '<div class="channel-logo-container"><img src="'+c.logo+'" alt="'+c.name+'" class="channel-logo" loading="lazy" onerror="this.src=\'https://via.placeholder.com/150x100.png?text=No+Logo\'"/></div><div class="channel-info"><span class="channel-name">'+c.name+'</span></div><button class="favorite-btn '+(isFav?'is-favorite':'')+'" data-url="'+c.url+'"><svg class="icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 17.27L18.18 21l-l.64-7.03L22 9.24l-7.19-.61L12 2 9.19 8.63 2 9.24l5.46 4.73L5.82 21z"/></svg></button>';
                 card.addEventListener('click', function(e) { if (!e.target.closest('.favorite-btn')) playChannel(c); });
                 card.querySelector('.favorite-btn').addEventListener('click', function(e) { e.stopPropagation(); toggleFavorite(c.url); });
                 channelGrid.appendChild(card);
@@ -140,12 +135,7 @@
             if (Hls.isSupported()) { hls.loadSource(channel.url); hls.attachMedia(video); }
             else if (video.canPlayType('application/vnd.apple.mpegurl')) { video.src = channel.url; }
             headerTitle.textContent = channel.name; document.title = channel.name;
-            addToRecentlyWatched(channel); videoContainer.scrollIntoView({ behavior: 'smooth' }); video.play();
-        }
-
-        function handleSearch(e) {
-            var term = e.target.value.toLowerCase();
-            renderChannels(allChannels.filter(function(c) { return c.name.toLowerCase().indexOf(term) > -1; }));
+            addToRecentlyWatched(channel); video.play(); videoContainer.scrollIntoView({ behavior: 'smooth' });
         }
 
         function handleCategoryChange(e) {
@@ -164,37 +154,32 @@
         }
 
         function toggleSidebar() { body.classList.toggle('sidebar-open'); }
-        function togglePlayerSize(min) { videoContainer.classList.toggle('minimized', min); minimizePlayerBtn.style.display = min ? 'none' : 'block'; expandPlayerBtn.style.display = min ? 'block' : 'none'; }
-        function toggleTheme() { body.classList.toggle('dark-theme'); localStorage.setItem('theme', body.classList.contains('dark-theme') ? 'dark' : 'light'); }
         function loadTheme() { if (localStorage.getItem('theme') === 'dark') body.classList.add('dark-theme'); }
         function toggleFavorite(url) { var idx = favorites.indexOf(url); if (idx > -1) favorites.splice(idx, 1); else favorites.push(url); localStorage.setItem('favorites', JSON.stringify(favorites)); var btn = document.querySelector('.favorite-btn[data-url="' + url + '"]'); if (btn) btn.classList.toggle('is-favorite', idx === -1); if (currentCategory === 'Favorites') handleCategoryChange({ preventDefault: function(){}, target: document.querySelector('a[data-category="Favorites"]') }); }
         function addToRecentlyWatched(channel) { var idx = recentlyWatched.indexOf(channel.url); if (idx > -1) recentlyWatched.splice(idx, 1); recentlyWatched.unshift(channel.url); if (recentlyWatched.length > 20) recentlyWatched.pop(); localStorage.setItem('recentlyWatched', JSON.stringify(recentlyWatched)); }
 
         function init() {
             loadTheme();
-            if (!M3U_URL) { channelGrid.innerHTML = '<div class="loader">Please add your M3U URL in the code.</div>'; return; }
+            if (!YOUR_M3U_LINK) { channelGrid.innerHTML = '<div class="loader" style="color: red;">M3U link is missing. Please add your M3U link in the index.html file.</div>'; return; }
             
-            // CORS Proxy to fetch the M3U link
             var proxyUrl = 'https://api.allorigins.win/raw?url=';
-            fetch(proxyUrl + encodeURIComponent(M3U_URL))
-                .then(function(response) { return response.text(); })
+            fetch(proxyUrl + encodeURIComponent(YOUR_M3U_LINK))
+                .then(function(response) { if (!response.ok) { throw new Error('Network response was not ok'); } return response.text(); })
                 .then(function(data) {
                     allChannels = parseM3U(data);
+                    if(allChannels.length === 0) { throw new Error('No channels found in the M3U file. It might be empty or in a wrong format.'); }
                     updateCategories(allChannels);
                     renderChannels(allChannels);
                 })
                 .catch(function(error) {
                     console.error('Error fetching M3U file:', error);
-                    channelGrid.innerHTML = '<div class="loader">Failed to load channel list. The M3U link might be incorrect or the provider is blocking requests.</div>';
+                    channelGrid.innerHTML = '<div class="loader" style="color: red;">Failed to load channel list. Please check if the M3U link is correct and active.</div>';
                 });
 
-            themeToggleBtn.addEventListener('click', toggleTheme);
+            themeToggleBtn.addEventListener('click', function() { body.classList.toggle('dark-theme'); localStorage.setItem('theme', body.classList.contains('dark-theme') ? 'dark' : 'light'); });
             menuBtn.addEventListener('click', toggleSidebar);
-            mainContent.addEventListener('click', function() { if (body.classList.contains('sidebar-open')) toggleSidebar(); });
-            searchInput.addEventListener('input', handleSearch);
+            searchInput.addEventListener('input', function(e) { var term = e.target.value.toLowerCase(); renderChannels(allChannels.filter(function(c) { return c.name.toLowerCase().indexOf(term) > -1; })); });
             categoryList.addEventListener('click', handleCategoryChange);
-            minimizePlayerBtn.addEventListener('click', function() { togglePlayerSize(true); });
-            expandPlayerBtn.addEventListener('click', function() { togglePlayerSize(false); });
         }
         
         init();
@@ -202,5 +187,4 @@
     //]]>
     </script>
 </body>
-
 </html>
